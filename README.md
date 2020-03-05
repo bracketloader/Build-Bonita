@@ -167,7 +167,7 @@ version. It is highly advised to do the merge in a dedicated branch as some issu
 
 Release are cut when
 - a new Bonita version (GA or maintenance) is supported by `Build-Bonita`
-- significant improvements have been made to t
+- significant improvements have been made in the `Build-Bonita` build script for the latest supported Bonita version
 
 ### Create Tag
 **Note**: automation request, see [#49](https://github.com/Bonitasoft-Community/Build-Bonita/issues/49)
