@@ -130,22 +130,22 @@ more details
 
 - create a new branch starting from the `master` branch, for instance `maintenance_7.10.2`
 - update the `build-script.sh` file and update the `BONITA_VERSION` variable
-- create a Pull Request targeting the `master` branch (TODO link to github doc)
+- [create a Pull Request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request) targeting the `master`
 - wait for build to pass, this should work without any other modifications
-- merge the Pull Request after successful build
+- [merge the Pull Request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/merging-a-pull-request) after successful build
 
 
 ### Bonita development version
 
 - create a new branch starting from the `dev` branch, for instance `dev_7.11.0.W10`
 - update the `build-script.sh` file and update the `BONITA_VERSION` variable
-- create a Pull Request targeting the `dev` branch
+- [create a Pull Request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request) targeting the `dev` branch
 - wait for build to run
 - failures often happen because of new components to be added or removed, build options of some components to be updated
   - try to fix, then commit and iterate until build pass
   - see [#32](https://github.com/Bonitasoft-Community/Build-Bonita/pull/32) or
   [#48](https://github.com/Bonitasoft-Community/Build-Bonita/pull/48) for instance
-- merge the Pull Request after successful build
+- [merge the Pull Request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/merging-a-pull-request) after successful build
 
 
 ### Merging master and dev branches
@@ -159,8 +159,8 @@ version. It is highly advised to do the merge in a dedicated branch as some issu
   - first, ensure that `master` has been merged into`dev`
   - create a new `bonita_7.10.0_GA` branch starting from `master` branch
   - merge `dev` into `bonita_7.10.0_GA`
-  - create a Pull Request from `bonita_7.10.0_GA` targeting the `master` branch
-  - merge the PR into `master` when the build passed (eventually after fixing any issues related to the merge)
+  - [create a Pull Request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request) from `bonita_7.10.0_GA` targeting the `master` branch
+  - [merge the Pull Request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/merging-a-pull-request) into `master` when the build passed (eventually after fixing any issues related to the merge)
 
 
 ## New Release
