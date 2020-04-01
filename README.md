@@ -95,7 +95,7 @@ solution provided by `Build-Bonita`
 Tags are only available to build Bonita GA (i.e. 7.9.0, 7.10.0, ....) or maintenance (i.e. 7.7.5, 7.9.4, ....) versions,
 not for development versions.
 
-### Tag scheme
+### <a name="tag-scheme"></a> Tag scheme
 - prior Bonita 7.10, `Build-Bonita` tags exactly match the Bonita version
 - as of Bonita 7.10, tags use the `<bonita_version>-<increment>` like `7.10.0-1`. This allows to track improvements or
 bug fixes applied to `Build-Bonita` for a given Bonita version
@@ -169,19 +169,14 @@ Release are cut when
 - a new Bonita version (GA or maintenance) is supported by `Build-Bonita`
 - significant improvements have been made in the `Build-Bonita` build script for the latest supported Bonita version
 
-### Create Tag
-**Note**: automation request, see [#49](https://github.com/Bonitasoft-Community/Build-Bonita/issues/49)
-
-First, ensure that build to pass on the `master` branch
-
-Run the following command from your shell
-- checkout the `master` branch: `git checkout master`
-- ensure it is up to date with the remote: `git pull --tags`
-- create the local tag (use the [tag scheme](#tag-scheme)): `git tag <tag_name>`
-- push the tag to the remote repository: `git push origin <tag_name>`
-- check that the tag is [available on GitHub](https://github.com/Bonitasoft-Community/Build-Bonita/tags)
-
 ### Create a GitHub release
 
-- 1st create a tag (see above)
-- create the new release related to the tag following the [GitHub help](https://help.github.com/en/github/administering-a-repository/managing-releases-in-a-repository)
+A new release can be create by following the [GitHub help](https://help.github.com/en/github/administering-a-repository/managing-releases-in-a-repository#creating-a-release)
+- for `Tag version`, use a value that follows the [Tag Scheme](#tag-scheme). The tag will be created when the release
+will be published
+- for `Target`
+  - usually, keep the `master` branch except if new commits that you don't want to integrate for the release are already
+  available in the branch
+  - in that case, choose a dedicated commit 
+  - **important**: ensure that the build to pass on the chosen branch or commit used to create the release
+
