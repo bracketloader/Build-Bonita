@@ -128,12 +128,12 @@ more details
 
 ### Bonita maintenance version
 
-- create a new branch starting from the `master` branch, for instance `maintenance_7.10.2`
+- from GitHub interface, edit `build-script.sh`on `master` branch (you can follow [GitHub help](https://help.github.com/en/github/managing-files-in-a-repository/editing-files-in-your-repository))
 - update the `build-script.sh` file and update the `BONITA_VERSION` variable
-- [create a Pull Request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request) targeting the `master`
+- propose file changes by creating a new branch, for instance `maintenance_7.10.2`
+- [create a Pull Request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request) targeting `master`
 - wait for build to pass, this should work without any other modifications
 - [merge the Pull Request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/merging-a-pull-request) after successful build
-
 
 ### Bonita development version
 
