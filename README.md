@@ -48,9 +48,9 @@ find -type d -name target -prune -exec rm -rf {} \;
 ## Test environments
 
 CI builds are run on push to master/dev branches and Pull Requests (see badges on top of this page)
-- Linux: Ubuntu Xenial (Travis CI)
-- MacOS: Catalina (Github Actions)
-- Windows: Windows Server 2019 DataCenter (Github Actions)
+- Linux: Ubuntu 18.04 (Travis CI)
+- MacOS: Catalina (GitHub Actions)
+- Windows: Windows Server 2019 DataCenter (GitHub Actions)
 
 
 ## Issues
