@@ -18,7 +18,7 @@ BONITA_BUILD_STUDIO_SKIP=${BONITA_BUILD_STUDIO_SKIP:-false}
 
 # Bonita version
 
-BONITA_VERSION=7.11.3
+BONITA_VERSION=7.12.0
 
 
 ########################################################################################################################
@@ -64,7 +64,7 @@ checkout() {
 
     # If we don't already clone the repository do it
     if [ ! -d "$checkout_folder_name/.git" ]; then
-      git clone "https://github.com/bonitasoft/$repository_name.git" $checkout_folder_name
+      git clone --depth 1 "https://github.com/bonitasoft/$repository_name.git" $checkout_folder_name
     fi
     # Ensure we fetch all the tags and that we are on the appropriate one
     git -C $checkout_folder_name fetch --tags
@@ -87,11 +87,6 @@ run_gradle_with_standard_system_properties() {
     eval "$build_command"
     # Go back to script folder (checkout move current directory to project checkout folder.
     cd ..
-}
-
-# FIXME: should be replaced in all project by Maven wrapper
-build_maven() {
-    build_command="mvn"
 }
 
 build_maven_wrapper() {
@@ -145,20 +140,6 @@ profile() {
     build_command="$build_command -P$1"
 }
 
-#FIXME: should be replaced in all projects by Maven wrapper
-# params:
-# - Git repository name
-# - Branch name (optional)
-build_maven_install_skiptest() {
-    checkout "$@"
-    build_maven
-    build_quiet_if_requested
-    clean
-    install
-    skiptest
-    run_maven_with_standard_system_properties
-}
-
 # params:
 # - Git repository name
 # - Profile name
@@ -179,10 +160,6 @@ build_maven_wrapper_verify_skiptest_with_profile()
 build_maven_wrapper_install_skiptest()
 {
     checkout "$@"
-    # FIXME: required to build UID
-    # This has been fixed in UID 1.9.56, see https://github.com/bonitasoft/bonita-ui-designer/commit/edf0a0c7f943e8f215890550247d61eba14932c6
-    # To be removed when we will build newest UID versions
-    chmod u+x mvnw
     build_maven_wrapper
     build_quiet_if_requested
     clean
@@ -259,16 +236,6 @@ checkPrerequisites() {
         fi
     fi
 
-    # Test that Maven exists
-    # FIXME: remove once all projects includes Maven wrapper
-    if hash mvn 2>/dev/null; then
-        MAVEN_VERSION="$(mvn --version 2>&1 | awk -F " " 'NR==1 {print $3}')"
-        echo "  > Use Maven version: $MAVEN_VERSION"
-    else
-        echo "Maven not found. Exiting."
-        exit 1
-    fi
-
     # Test if Curl exists
     if hash curl 2>/dev/null; then
         CURL_VERSION="$(curl --version 2>&1  | awk -F " " 'NR==1 {print $2}')"
@@ -332,55 +299,6 @@ checkJavaVersion() {
 # TOOLING
 ########################################################################################################################
 
-detectStudioDependenciesVersions() {
-	echoHeaders "Detecting Studio dependencies versions"
-	local studioPom=`curl -sS -X GET https://raw.githubusercontent.com/bonitasoft/bonita-studio/${BONITA_VERSION}/pom.xml`
-
-    STUDIO_IMAGE_OVERLAY_PLUGIN_VERSION=`echo "${studioPom}" | grep image-overlay-plugin.version | grep -v '<version>' | sed 's@.*>\(.*\)<.*@\1@g'`
-    STUDIO_UID_VERSION=`echo "${studioPom}" | grep ui.designer.version | sed 's@.*>\(.*\)<.*@\1@g'`
-
-    echo "STUDIO_IMAGE_OVERLAY_PLUGIN_VERSION: ${STUDIO_IMAGE_OVERLAY_PLUGIN_VERSION}"
-    echo "STUDIO_UID_VERSION: ${STUDIO_UID_VERSION}"
-}
-
-detectConnectorsVersions() {
-  echoHeaders "Detecting Connectors versions"
-  local studioPom=`curl -sS -X GET https://raw.githubusercontent.com/bonitasoft/bonita-studio/${BONITA_VERSION}/bundles/plugins/org.bonitasoft.studio.connectors/pom.xml`
-
-    CONNECTOR_VERSION_ALFRESCO=`echo "${studioPom}" | grep connector.version.alfresco | grep -v '<version>' | sed 's@.*>\(.*\)<.*@\1@g'`
-    echo "CONNECTOR_VERSION_ALFRESCO: ${CONNECTOR_VERSION_ALFRESCO}"
-
-    CONNECTOR_VERSION_CMIS=`echo "${studioPom}" | grep connector.version.cmis | grep -v '<version>' | sed 's@.*>\(.*\)<.*@\1@g'`
-    echo "CONNECTOR_VERSION_CMIS: ${CONNECTOR_VERSION_CMIS}"
-
-    CONNECTOR_VERSION_DATABASE=`echo "${studioPom}" | grep connector.version.database | grep -v '<version>' | sed 's@.*>\(.*\)<.*@\1@g'`
-    echo "CONNECTOR_VERSION_DATABASE: ${CONNECTOR_VERSION_DATABASE}"
-
-    CONNECTOR_VERSION_EMAIL=`echo "${studioPom}" | grep connector.version.email | grep -v '<version>' | sed 's@.*>\(.*\)<.*@\1@g'`
-    echo "CONNECTOR_VERSION_EMAIL: ${CONNECTOR_VERSION_EMAIL}"
-
-    CONNECTOR_VERSION_GOOGLE_CALENDAR_V3=`echo "${studioPom}" | grep google-calendar-v3 | grep -v '<version>' | grep -v 'impl' | sed 's@.*>\(.*\)<.*@\1@g'`
-    echo "CONNECTOR_VERSION_GOOGLE_CALENDAR_V3: ${CONNECTOR_VERSION_GOOGLE_CALENDAR_V3}"
-
-    CONNECTOR_VERSION_LDAP=`echo "${studioPom}" | grep connector.version.ldap | grep -v '<version>' | sed 's@.*>\(.*\)<.*@\1@g'`
-    echo "CONNECTOR_VERSION_LDAP: ${CONNECTOR_VERSION_LDAP}"
-
-    CONNECTOR_VERSION_REST=`echo "${studioPom}" | grep connector.version.rest | grep -v '<version>' | sed 's@.*>\(.*\)<.*@\1@g'`
-    echo "CONNECTOR_VERSION_REST: ${CONNECTOR_VERSION_REST}"
-
-    CONNECTOR_VERSION_SALESFORCE=`echo "${studioPom}" | grep connector.version.salesforce | grep -v '<version>' | sed 's@.*>\(.*\)<.*@\1@g'`
-    echo "CONNECTOR_VERSION_SALESFORCE: ${CONNECTOR_VERSION_SALESFORCE}"
-
-    CONNECTOR_VERSION_SCRIPTING=`echo "${studioPom}" | grep connector.version.scripting | grep -v '<version>' | sed 's@.*>\(.*\)<.*@\1@g'`
-    echo "CONNECTOR_VERSION_SCRIPTING: ${CONNECTOR_VERSION_SCRIPTING}"
-
-    CONNECTOR_VERSION_TWITTER=`echo "${studioPom}" | grep connector.version.twitter | grep -v '<version>' | sed 's@.*>\(.*\)<.*@\1@g'`
-    echo "CONNECTOR_VERSION_TWITTER: ${CONNECTOR_VERSION_TWITTER}"
-
-    CONNECTOR_VERSION_WEBSERVICE=`echo "${studioPom}" | grep connector.version.webservice | grep -v '<version>' | sed 's@.*>\(.*\)<.*@\1@g'`
-    echo "CONNECTOR_VERSION_WEBSERVICE: ${CONNECTOR_VERSION_WEBSERVICE}"
-}
-
 detectWebPagesDependenciesVersions() {
 	echoHeaders "Detecting web-pages dependencies versions"
 	local webPagesGradleBuild=`curl -sS -X GET https://raw.githubusercontent.com/bonitasoft/bonita-web-pages/${BONITA_VERSION}/build.gradle`
@@ -434,8 +352,6 @@ echo
 if [[ "${BONITA_BUILD_STUDIO_ONLY}" == "false" ]]; then
     build_gradle_wrapper_test_skip_publishToMavenLocal bonita-engine
 
-    build_maven_wrapper_install_skiptest bonita-userfilters
-
     build_maven_wrapper_install_skiptest bonita-web-extensions
 
     build_maven_wrapper_install_skiptest bonita-web
@@ -448,31 +364,12 @@ if [[ "${BONITA_BUILD_STUDIO_ONLY}" == "false" ]]; then
 
     build_maven_wrapper_install_skiptest bonita-distrib
 
-    # Connectors
-    detectConnectorsVersions
-
-    build_maven_wrapper_install_skiptest bonita-connector-cmis ${CONNECTOR_VERSION_CMIS}
-    build_maven_wrapper_install_skiptest bonita-connector-database ${CONNECTOR_VERSION_DATABASE}
-    build_maven_wrapper_install_skiptest bonita-connector-email ${CONNECTOR_VERSION_EMAIL}
-    build_maven_wrapper_install_skiptest bonita-connector-ldap ${CONNECTOR_VERSION_LDAP}
-    build_maven_wrapper_install_skiptest bonita-connector-rest ${CONNECTOR_VERSION_REST}
-    build_maven_wrapper_install_skiptest bonita-connector-salesforce ${CONNECTOR_VERSION_SALESFORCE}
-    build_maven_wrapper_install_skiptest bonita-connector-scripting ${CONNECTOR_VERSION_SCRIPTING}
-    build_maven_wrapper_install_skiptest bonita-connector-twitter ${CONNECTOR_VERSION_TWITTER}
-    build_maven_wrapper_install_skiptest bonita-connector-webservice ${CONNECTOR_VERSION_WEBSERVICE}
-    # connectors using legacy way of building
-    build_maven_install_skiptest bonita-connector-alfresco ${CONNECTOR_VERSION_ALFRESCO}
-    build_maven_install_skiptest bonita-connector-googlecalendar-V3 bonita-connector-google-calendar-v3-${CONNECTOR_VERSION_GOOGLE_CALENDAR_V3}
-
-    detectStudioDependenciesVersions
-    build_maven_wrapper_install_skiptest image-overlay-plugin image-overlay-plugin-${STUDIO_IMAGE_OVERLAY_PLUGIN_VERSION}
-    build_maven_wrapper_install_skiptest bonita-ui-designer ${STUDIO_UID_VERSION}
-    build_maven_wrapper_install_skiptest bonita-data-repository
 else
     echoHeaders "Skipping all build prior the Studio part"
 fi
 
 if [[ "${BONITA_BUILD_STUDIO_SKIP}" == "false" ]]; then
+    build_maven_wrapper_install_skiptest bonita-data-repository
     build_maven_wrapper_verify_skiptest_with_profile bonita-studio default,all-in-one,!jdk11-tests
 else
     echoHeaders "Skipping the Studio build"
