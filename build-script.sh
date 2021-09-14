@@ -18,7 +18,7 @@ BONITA_BUILD_STUDIO_SKIP=${BONITA_BUILD_STUDIO_SKIP:-false}
 
 # Bonita version
 
-BONITA_VERSION=7.12.0
+BONITA_VERSION=7.13.0.W36-05
 
 
 ########################################################################################################################
@@ -278,7 +278,7 @@ checkJavaVersion() {
     fi
 
     java_version_1st_digit=$(echo "$java_full_version" | sed 's/\(.*\)\..*\..*$/\1/g')
-    java_version_expected=8
+    java_version_expected=11
     # pre Java 9 versions, get minor version
     if [[ "$java_version_1st_digit" -eq "1" ]]; then
       java_version=$(echo "$java_full_version" | sed 's/.*\.\(.*\)\..*$/\1/g')
@@ -300,12 +300,21 @@ checkJavaVersion() {
 ########################################################################################################################
 
 detectWebPagesDependenciesVersions() {
-	echoHeaders "Detecting web-pages dependencies versions"
-	local webPagesGradleBuild=`curl -sS -X GET https://raw.githubusercontent.com/bonitasoft/bonita-web-pages/${BONITA_VERSION}/build.gradle`
+    echoHeaders "Detecting web-pages dependencies versions"
+    local webPagesGradleBuild=`curl -sS -X GET https://raw.githubusercontent.com/bonitasoft/bonita-web-pages/${BONITA_VERSION}/build.gradle`
 
     WEB_PAGES_UID_VERSION=`echo "${webPagesGradleBuild}" | tr -s "[:blank:]" | tr -d "\n" | sed 's@.*UIDesigner {\(.*\)"}.*@\1@g' | sed 's@.*version "\(.*\)@\1@g'`
     echo "WEB_PAGES_UID_VERSION: ${WEB_PAGES_UID_VERSION}"
 }
+
+detectStudioDependenciesVersions() {
+    echoHeaders "Detecting Studio dependencies versions"
+    local studioPom=`curl -sS -X GET https://raw.githubusercontent.com/bonitasoft/bonita-studio/${BONITA_VERSION}/pom.xml`
+
+    STUDIO_UID_VERSION=`echo "${studioPom}" | grep \<ui.designer.version\> | sed 's@.*>\(.*\)<.*@\1@g'`
+    echo "STUDIO_UID_VERSION: ${STUDIO_UID_VERSION}"
+}
+
 
 
 ########################################################################################################################
@@ -357,19 +366,28 @@ if [[ "${BONITA_BUILD_STUDIO_ONLY}" == "false" ]]; then
     build_maven_wrapper_install_skiptest bonita-web
     build_maven_wrapper_install_skiptest bonita-portal-js
 
-    # bonita-web-pages is build using a specific version of UI Designer.
+    # bonita-web-pages uses a dedicated UID version
     detectWebPagesDependenciesVersions
     build_maven_wrapper_install_skiptest bonita-ui-designer ${WEB_PAGES_UID_VERSION}
     build_gradle_wrapper_test_skip_publishToMavenLocal bonita-web-pages
 
-    build_maven_wrapper_install_skiptest bonita-distrib
+    build_maven_wrapper_install_skiptest bonita-application-directory
+    build_maven_wrapper_install_skiptest bonita-user-application
+    build_maven_wrapper_install_skiptest bonita-admin-application
+    build_maven_wrapper_install_skiptest bonita-super-admin-application
 
+    build_maven_wrapper_install_skiptest bonita-distrib
 else
     echoHeaders "Skipping all build prior the Studio part"
 fi
 
 if [[ "${BONITA_BUILD_STUDIO_SKIP}" == "false" ]]; then
     build_maven_wrapper_install_skiptest bonita-data-repository
+    
+    # bonita-studio uses a dedicated UID version
+    detectStudioDependenciesVersions
+    build_maven_wrapper_install_skiptest bonita-ui-designer ${STUDIO_UID_VERSION}
+    
     build_maven_wrapper_verify_skiptest_with_profile bonita-studio default,all-in-one,!jdk11-tests
 else
     echoHeaders "Skipping the Studio build"
