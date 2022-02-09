@@ -45,10 +45,10 @@ find -type d -name target -prune -exec rm -rf {} \;
 
 ## Test environments
 
-CI builds are run on push to master/dev branches and Pull Requests (see badges on top of this page)
-- Linux: Ubuntu 18.04 (Travis CI)
-- MacOS: Catalina (GitHub Actions)
-- Windows: Windows Server 2019 DataCenter (GitHub Actions)
+CI builds are run on push to master/dev branches and Pull Requests (see badges on top of this page) on GitHub Actions
+- Linux: Ubuntu 20.04
+- MacOS: Catalina
+- Windows: Windows Server 2019 DataCenter
 
 
 ## Issues
