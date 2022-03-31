@@ -18,8 +18,7 @@ BONITA_BUILD_STUDIO_SKIP=${BONITA_BUILD_STUDIO_SKIP:-false}
 
 # Bonita version
 
-BONITA_VERSION=7.14.0.beta-01
-
+BONITA_VERSION=7.14.0
 
 ########################################################################################################################
 # SCM AND BUILD FUNCTIONS
@@ -132,6 +131,10 @@ skiptest() {
     build_command="$build_command -DskipTests"
 }
 
+skipLocalRepositoryCompatibleVersion() {
+    build_command="$build_command -DlocalRepository.compatibleVersions.skip"
+}
+
 gradle_test_skip() {
     build_command="$build_command -x test"
 }
@@ -151,6 +154,7 @@ build_maven_wrapper_verify_skiptest_with_profile()
     clean
     verify
     skiptest
+    skipLocalRepositoryCompatibleVersion
     profile $2
     run_maven_with_standard_system_properties
 }
