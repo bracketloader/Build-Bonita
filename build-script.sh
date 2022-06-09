@@ -18,8 +18,7 @@ BONITA_BUILD_STUDIO_SKIP=${BONITA_BUILD_STUDIO_SKIP:-false}
 
 # Bonita version
 
-BONITA_VERSION=7.13.0
-
+BONITA_VERSION=7.14.0
 
 ########################################################################################################################
 # SCM AND BUILD FUNCTIONS
@@ -75,7 +74,7 @@ checkout() {
 }
 
 run_maven_with_standard_system_properties() {
-	build_command="$build_command -Dengine.version=$BONITA_VERSION -Dfilters.version=$BONITA_VERSION"
+	build_command="$build_command -Dengine.version=$BONITA_VERSION"
     echo "[DEBUG] Running build command: $build_command"
     eval "$build_command"
     # Go back to script folder (checkout move current directory to project checkout folder.
@@ -132,6 +131,10 @@ skiptest() {
     build_command="$build_command -DskipTests"
 }
 
+skipLocalRepositoryCompatibleVersion() {
+    build_command="$build_command -DlocalRepository.compatibleVersions.skip"
+}
+
 gradle_test_skip() {
     build_command="$build_command -x test"
 }
@@ -151,6 +154,7 @@ build_maven_wrapper_verify_skiptest_with_profile()
     clean
     verify
     skiptest
+    skipLocalRepositoryCompatibleVersion
     profile $2
     run_maven_with_standard_system_properties
 }
@@ -223,19 +227,6 @@ logBuildInfo() {
 
 checkPrerequisites() {
     echo "Prerequisites"
-    if [[ "${OS_IS_LINUX}" == "true" ]]; then
-        if [[ "${BONITA_BUILD_STUDIO_SKIP}" == "false" ]]; then
-            # Test that x server is running. Required to generate Bonita Studio models
-            # Can be ignored if Studio is build without the "generate" Maven profile
-
-            if ! xset q &>/dev/null; then
-                echo "No X server at \$DISPLAY [$DISPLAY]" >&2
-                exit 1
-            fi
-            echo "  > X server running correctly"
-        fi
-    fi
-
     # Test if Curl exists
     if hash curl 2>/dev/null; then
         CURL_VERSION="$(curl --version 2>&1  | awk -F " " 'NR==1 {print $2}')"
@@ -388,7 +379,7 @@ if [[ "${BONITA_BUILD_STUDIO_SKIP}" == "false" ]]; then
     detectStudioDependenciesVersions
     build_maven_wrapper_install_skiptest bonita-ui-designer ${STUDIO_UID_VERSION}
     
-    build_maven_wrapper_verify_skiptest_with_profile bonita-studio default,all-in-one,!jdk11-tests
+    build_maven_wrapper_verify_skiptest_with_profile bonita-studio default,all-in-one,!jdk11-tests,local-repository
 else
     echoHeaders "Skipping the Studio build"
 fi
