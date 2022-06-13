@@ -18,7 +18,7 @@ BONITA_BUILD_STUDIO_SKIP=${BONITA_BUILD_STUDIO_SKIP:-false}
 
 # Bonita version
 
-BONITA_VERSION=7.14.0
+BRANCH_OR_TAG=dev
 
 ########################################################################################################################
 # SCM AND BUILD FUNCTIONS
@@ -46,14 +46,6 @@ checkout() {
 
     repository_name="$1"
 
-    if [ "$#" -ge 2 ]; then
-        tag_name="$2"
-    else
-        # If we don't have a tag name assume that the tag is named with the Bonita version
-		tag_name=$BONITA_VERSION
-    fi
-	echoHeaders "Processing ${repository_name} ${tag_name}"
-
     if [ "$#" -eq 3 ]; then
         checkout_folder_name="$3"
     else
@@ -63,18 +55,49 @@ checkout() {
 
     # If we don't already clone the repository do it
     if [ ! -d "$checkout_folder_name/.git" ]; then
+      echoHeaders "Cloning ${repository_name}"
       git clone --depth 1 "https://github.com/bonitasoft/$repository_name.git" $checkout_folder_name
     fi
+
+
     # Ensure we fetch all the tags and that we are on the appropriate one
     git -C $checkout_folder_name fetch --tags
-    git -C $checkout_folder_name reset --hard tags/$tag_name
+
+    if [ "$#" -ge 2 ]; then
+        tag_name="$2"
+    else
+        # If we don't have a tag name assume that the tag is named with the Bonita version
+		tag_name=$BRANCH_OR_TAG
+    fi
+
+    set +e
+
+    git -C $checkout_folder_name show-ref --quiet --verify refs/tags/$tag_name
+
+    if [ $? -eq 0 ]; then
+        echo "Found a matching tag ref for $tag_name"
+        tag_name="tags/$tag_name"
+    else
+        git -C $checkout_folder_name show-ref -q --verify refs/heads/$tag_name
+        if [ $? -eq 0 ]; then 
+            echo "Found a matching branch ref for $tag_name"
+        else
+            echo "$tag_name is neither a known tag or branch in $repository_name"
+            exit 1
+        fi
+    fi
+
+    set -e
+
+	echoHeaders "Switching ${repository_name} to ${tag_name}"
+
+    git -C $checkout_folder_name reset --hard $tag_name
 
     # Move to the repository clone folder (required to run Maven/Gradle wrapper)
     cd $checkout_folder_name
 }
 
 run_maven_with_standard_system_properties() {
-	build_command="$build_command -Dengine.version=$BONITA_VERSION"
     echo "[DEBUG] Running build command: $build_command"
     eval "$build_command"
     # Go back to script folder (checkout move current directory to project checkout folder.
@@ -89,7 +112,7 @@ run_gradle_with_standard_system_properties() {
 }
 
 build_maven_wrapper() {
-    build_command="./mvnw"
+    build_command="./mvnw -ntp"
 }
 
 build_gradle_wrapper() {
@@ -218,7 +241,7 @@ logBuildInfo() {
     echo "  > Commit: $(git rev-parse FETCH_HEAD)"
 
     echo "Build settings"
-    echo "  > BONITA_VERSION: ${BONITA_VERSION}"
+    echo "  > BRANCH_OR_TAG: ${BRANCH_OR_TAG}"
     echo "  > BONITA_BUILD_NO_CLEAN: ${BONITA_BUILD_NO_CLEAN}"
     echo "  > BONITA_BUILD_QUIET: ${BONITA_BUILD_QUIET}"
     echo "  > BONITA_BUILD_STUDIO_ONLY: ${BONITA_BUILD_STUDIO_ONLY}"
@@ -292,7 +315,7 @@ checkJavaVersion() {
 
 detectWebPagesDependenciesVersions() {
     echoHeaders "Detecting web-pages dependencies versions"
-    local webPagesGradleBuild=`curl -sS -X GET https://raw.githubusercontent.com/bonitasoft/bonita-web-pages/${BONITA_VERSION}/build.gradle`
+    local webPagesGradleBuild=`curl -sS -X GET https://raw.githubusercontent.com/bonitasoft/bonita-web-pages/${BRANCH_OR_TAG}/common.gradle`
 
     WEB_PAGES_UID_VERSION=`echo "${webPagesGradleBuild}" | tr -s "[:blank:]" | tr -d "\n" | sed 's@.*UIDesigner {\(.*\)"}.*@\1@g' | sed 's@.*version "\(.*\)@\1@g'`
     echo "WEB_PAGES_UID_VERSION: ${WEB_PAGES_UID_VERSION}"
@@ -300,7 +323,7 @@ detectWebPagesDependenciesVersions() {
 
 detectStudioDependenciesVersions() {
     echoHeaders "Detecting Studio dependencies versions"
-    local studioPom=`curl -sS -X GET https://raw.githubusercontent.com/bonitasoft/bonita-studio/${BONITA_VERSION}/pom.xml`
+    local studioPom=`curl -sS -X GET https://raw.githubusercontent.com/bonitasoft/bonita-studio/${BRANCH_OR_TAG}/pom.xml`
 
     STUDIO_UID_VERSION=`echo "${studioPom}" | grep \<ui.designer.version\> | sed 's@.*>\(.*\)<.*@\1@g'`
     echo "STUDIO_UID_VERSION: ${STUDIO_UID_VERSION}"
@@ -379,7 +402,7 @@ if [[ "${BONITA_BUILD_STUDIO_SKIP}" == "false" ]]; then
     detectStudioDependenciesVersions
     build_maven_wrapper_install_skiptest bonita-ui-designer ${STUDIO_UID_VERSION}
     
-    build_maven_wrapper_verify_skiptest_with_profile bonita-studio default,all-in-one,!jdk11-tests,local-repository
+    build_maven_wrapper_verify_skiptest_with_profile bonita-studio default,all-in-one,!jdk11-tests
 else
     echoHeaders "Skipping the Studio build"
 fi
