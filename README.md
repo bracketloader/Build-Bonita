@@ -45,7 +45,7 @@ find -type d -name target -prune -exec rm -rf {} \;
 
 ## Test environments
 
-CI builds are run on push to master/dev branches and Pull Requests (see badges on top of this page) on GitHub Actions
+CI builds are run on push to `main` branch and Pull Requests (see badges on top of this page) on GitHub Actions
 - Linux: Ubuntu 20.04
 - MacOS: Catalina
 - Windows: Windows Server 2019 DataCenter
@@ -61,7 +61,7 @@ You can also ask for help on [Bonita Community forum](https://community.bonitaso
 
 ### Build action
 
-The build action is triggered on Pull requests and `master` branch pushes.  
+The build action is triggered on Pull requests and `main` branch pushes.  
 It runs the `build-script.sh` on the 3 supported OS:
 
 * Ubuntu
@@ -78,7 +78,7 @@ The use of `Build-Bonita` branch or tag depends of the Bonita version you want t
 
 | Bonita version | Build-Bonita branch or tag |
 | -------- | ----- |
-| Next Bonita GA version | `master` branch |
+| Next Bonita GA version | `main` branch |
 | Old versions | related tag (see the [tags](#tags) section below) |
 
 **Notes**
@@ -89,7 +89,7 @@ development versions. See [#41](https://github.com/Bonitasoft-Community/Build-Bo
 ### Branches
 
 `Build-Bonita` uses the same branch names as the Bonita repositories
-- `master` branch build the current development version aka `dev` branch.
+- `main` branch build the current development version aka `dev` branch.
 
 
 ### Tags
