@@ -5,15 +5,13 @@ on:
     - cron: '0 3 * * *'
   push:
     branches:
-    - master
-    - dev
+    - main
     paths-ignore:
       - '*.md'
       - LICENSE
   pull_request:
     branches:
-    - master
-    - dev
+    - main
     paths-ignore:
       - '*.md'
       - LICENSE
