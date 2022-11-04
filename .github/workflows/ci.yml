@@ -71,7 +71,7 @@ jobs:
       - uses: technote-space/workflow-conclusion-action@v3
       - name: Send failure message to Slack channel
         if: ${{ github.event_name != 'pull_request' && env.WORKFLOW_CONCLUSION == 'failure'}}
-        uses: bonitasoft/actions/packages/notify-slack@main        
+        uses: bonitasoft/actions/packages/notify-slack@v1    
         with:
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
           MESSAGE: |
