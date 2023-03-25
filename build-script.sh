@@ -336,7 +336,7 @@ detectWebPagesDependenciesVersions() {
     echoHeaders "Detecting web-pages dependencies versions"
     local webPagesGradleBuild=`curl -sS -X GET https://raw.githubusercontent.com/bonitasoft/bonita-web-pages/${BRANCH_OR_TAG}/common.gradle`
 
-    WEB_PAGES_UID_VERSION=`echo "${webPagesGradleBuild}" | tr -s "[:blank:]" | tr -d "\n" | sed 's@.*UIDesigner {\(.*\)"}.*@\1@g' | sed 's@.*version "\(.*\)@\1@g'`
+    WEB_PAGES_UID_VERSION=`echo "${webPagesGradleBuild}" | tr -s "[:blank:]" | tr -d "\n" | sed 's@.*UIDesigner {\(.*\)\x27}.*@\1@g' | sed 's@.*version \x27\(.*\)@\1@g'`
     echo "WEB_PAGES_UID_VERSION: ${WEB_PAGES_UID_VERSION}"
 }
 
