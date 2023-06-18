@@ -7,7 +7,7 @@
 
 A bash script is provided to build the whole Bonita Community Edition solution from sources publicly available.
 
-It clones Git repositories and build all Bonita components in the right order to let you generate the Bonita Bundle and
+It clones Git repositories and builds all Bonita components in the right order to let you generate the Bonita Bundle and
 the Bonita Studio.
 
 
@@ -38,9 +38,9 @@ rm -rf ~/.gradle/caches
 find -type d -name ".gradle" -prune -exec rm -rf {} \;
 find -type d -name target -prune -exec rm -rf {} \;
 ```
-- No tests are run by the script (at least no back end tests). If you want to run some tests, go to the directory
+- No tests are run by the script (at least no backend tests). If you want to run some tests, go to the directory
  related to the Bonita component you want to test, and follow instructions (generally available in README file)
-- The script does not produce Studio installers (required license for proprietary software).
+- The script does not produce studio installers (required license for proprietary software).
 
 
 ## Test environments
